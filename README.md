@@ -3,7 +3,7 @@
 
 This Docker Compose stack provides a complete monitoring solution with Splunk, syslog, Nginx reverse proxy, and Apache web server.
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 Internet → Nginx (Port 80) → {
@@ -19,44 +19,23 @@ Log Generator → {
 } → Splunk Indexer
 ```
 
-## 🚀 Quick Start
-
-1. **Clone or create the directory structure:**
-   ```bash
-   mkdir monitoring-stack && cd monitoring-stack
-   # Copy all configuration files to appropriate directories
-   ```
-
-2. **Deploy the stack:**
-   ```bash
-   chmod +x deploy.sh
-   ./deploy.sh
-   ```
-
-3. **Access the services:**
-   - **Root:** `http://your-ec2-ip/` (Apache homepage)
-   - **Monitoring:** `http://your-ec2-ip/monitoring` (Splunk UI)
-   - **Test Service:** `http://your-ec2-ip/test` (Log generator)
-
 ## 📁 Directory Structure
 
 ```
 monitoring-stack/
 ├── docker-compose.yml
-├── deploy.sh
-├── stop.sh
-├── logs.sh
+├── startup.sh
 ├── nginx/
 │   ├── nginx.conf
 │   └── conf.d/default.conf
 ├── apache/
-│   └── htdocs/index.html
+│   └── index.html
 ├── splunk/
 │   └── inputs.conf
 ├── rsyslog/
 │   └── rsyslog.conf
 └── log-generator/
-    └── log_generator.py
+    └── app.py
 ```
 
 ## 🔧 Configuration

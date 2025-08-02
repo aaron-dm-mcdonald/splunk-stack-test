@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - splunk
+      - apache
+      - log-generator
+    restart: unless-stopped
+
+  # Apache HTTP Server
+  apache:
+    image: httpd:2.4-alpine
+    container_name: apache-server
+    expose:
+      - "80"
+    volumes:
+      - ./apache/htdocs:/usr/local/apache2/htdocs
+    restart: unless-stopped
+
+  # Splunk Enterprise
+  splunk:
+    image: splunk/splunk:latest
+    container_name: splunk-server
+    hostname: splunk
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_HEC_TOKEN=${SPLUNK_HEC_TOKEN}
+      - SPLUNK_PASSWORD=${SPLUNK_PASSWORD}
+      - SPLUNK_USER=admin
+    ports:
+      - "8000:8000"  # Splunk Web UI
+      - "8088:8088"  # HEC
+      - "9997:9997"  # Splunk forwarder
+    expose:
+      - "8000"
+    volumes:
+      - splunk-var:/opt/splunk/var
+      - splunk-etc:/opt/splunk/etc
+      - ./splunk/inputs.conf:/opt/splunk/etc/system/local/inputs.conf
+    restart: unless-stopped
+
+  # Rsyslog Server
+  rsyslog:
+    image: jumanjiman/rsyslog:latest
+    container_name: rsyslog-server
+    ports:
+      - "${SYSLOG_PORT}:514/udp"
+      - "${SYSLOG_PORT}:514/tcp"
+    volumes:
+      - ./rsyslog/rsyslog.conf:/etc/rsyslog.conf:ro
+      - rsyslog-logs:/var/log
+    restart: unless-stopped
+
+  # Log Generator Service
+  log-generator:
+    build: ./log-generator
+    container_name: log-generator
+    expose:
+      - "5000"
+    environment:
+      - SPLUNK_HEC_URL=${SPLUNK_HEC_URL}
+      - SPLUNK_HEC_TOKEN=${SPLUNK_HEC_TOKEN}
+      - SYSLOG_SERVER=${SYSLOG_SERVER}
+      - SYSLOG_PORT=${SYSLOG_PORT}
+    depends_on:
+      - splunk
+      - rsyslog
+    restart: unless-stopped
+
+volumes:
+  splunk-var:
+  splunk-etc:
+  rsyslog-logs:
