@@ -45,6 +45,7 @@ services:
       - splunk-var:/opt/splunk/var
       - splunk-etc:/opt/splunk/etc
       #- ./splunk/inputs.conf:/opt/splunk/etc/system/local/inputs.conf
+      - ./splunk/web.conf:/opt/splunk/etc/system/local/web.conf:ro
     restart: unless-stopped
 
   # Rsyslog Server
